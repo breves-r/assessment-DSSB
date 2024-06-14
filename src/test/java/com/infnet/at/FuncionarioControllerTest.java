@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -18,10 +19,12 @@ import java.util.Arrays;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FuncionarioController.class)
+@WithMockUser(username = "user", password = "password", roles = "ADMIN")
 public class FuncionarioControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -65,6 +68,7 @@ public class FuncionarioControllerTest {
         given(funcionarioService.save(any(Funcionario.class))).willReturn(funcionario);
 
         mockMvc.perform(post("/api/funcionario")
+                        .with(csrf().asHeader())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(funcionario)))
                         .andExpect(status().isCreated())
@@ -79,6 +83,7 @@ public class FuncionarioControllerTest {
         given(funcionarioService.update(anyLong(), any(Funcionario.class))).willReturn(funcionario);
 
         mockMvc.perform(put("/api/funcionario/1")
+                        .with(csrf().asHeader())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(funcionario)))
                         .andExpect(status().isAccepted())
@@ -88,7 +93,7 @@ public class FuncionarioControllerTest {
 
     @Test
     public void testDeleteFuncionario() throws Exception {
-        mockMvc.perform(delete("/api/funcionario/1"))
+        mockMvc.perform(delete("/api/funcionario/1").with(csrf().asHeader()))
                 .andExpect(status().isAccepted());
     }
 }
